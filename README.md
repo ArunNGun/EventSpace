@@ -61,7 +61,7 @@ npm run build
 - **Development Tools**: Vite for backend, Turborepo for monorepo management
 - **Future Enhancements**:
   - Database: PostgreSQL with Prisma ORM
-  - API Layer: GraphQL with Apollo
+  - API Layer: GraphQL with Apollo or yoga maybe
   - Authentication: NextAuth.js or similar
   - Payment Processing: Stripe/PayPal
   - Real-time Features: WebSockets
