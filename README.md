@@ -15,7 +15,7 @@ EventSpace/
 ├── apps/
 │   ├── backend/         # Express server with Vite
 │   └── frontend/        # Next.js application
-└── packages/            # Shared packages (for future use)
+└── packages/            # Shared packages
 ```
 
 ## Getting Started
