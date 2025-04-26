@@ -1,0 +1,116 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Core models for EventSpace application
+
+model User {
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  password      String
+  image         String?
+  bio           String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  // Relations
+  hostedEvents  Event[]   @relation("EventHost")
+  bookings      Booking[]
+  reviews       Review[]  @relation("ReviewAuthor")
+}
+
+model Event {
+  id            String    @id @default(cuid())
+  title         String
+  description   String
+  location      String?
+  isOnline      Boolean   @default(false)
+  startTime     DateTime
+  endTime       DateTime
+  capacity      Int?
+  price         Decimal?  @db.Decimal(10, 2)
+  currency      String?   @default("USD")
+  imageUrl      String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  // Relations
+  hostId        String
+  host          User      @relation("EventHost", fields: [hostId], references: [id])
+  bookings      Booking[]
+  reviews       Review[]  @relation("EventReviews")
+  categories    CategoryOnEvent[]
+  
+  @@index([hostId])
+}
+
+model Category {
+  id            String    @id @default(cuid())
+  name          String    @unique
+  description   String?
+  
+  // Relations
+  events        CategoryOnEvent[]
+}
+
+model CategoryOnEvent {
+  event         Event     @relation(fields: [eventId], references: [id])
+  eventId       String
+  category      Category  @relation(fields: [categoryId], references: [id])
+  categoryId    String
+  
+  @@id([eventId, categoryId])
+  @@index([eventId])
+  @@index([categoryId])
+}
+
+model Booking {
+  id            String    @id @default(cuid())
+  status        BookingStatus @default(PENDING)
+  quantity      Int       @default(1)
+  totalPrice    Decimal?  @db.Decimal(10, 2)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  // Relations
+  userId        String
+  user          User      @relation(fields: [userId], references: [id])
+  eventId       String
+  event         Event     @relation(fields: [eventId], references: [id])
+  
+  @@index([userId])
+  @@index([eventId])
+}
+
+model Review {
+  id            String    @id @default(cuid())
+  rating        Int
+  comment       String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  // Relations
+  authorId      String
+  author        User      @relation("ReviewAuthor", fields: [authorId], references: [id])
+  eventId       String
+  event         Event     @relation("EventReviews", fields: [eventId], references: [id])
+  
+  @@index([authorId])
+  @@index([eventId])
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
