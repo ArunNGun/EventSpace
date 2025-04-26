@@ -1,6 +1,6 @@
 # EventSpace
 
-EventSpace is a smart event management and discovery platform combining Meetup, Ticketmaster, and Airbnb Experiences features. Users can discover, host, and book events (both online and offline) with support for limited seats, pricing tiers, reviews, personalized recommendations, and real-time notifications.
+EventSpace is a smart event management and discovery platform combining Meetup and Airbnb Experiences features. Users can discover, host, and book events (both online and offline) with support for limited seats, pricing tiers, reviews, personalized recommendations, and real-time notifications.
 
 ## Authors
 
