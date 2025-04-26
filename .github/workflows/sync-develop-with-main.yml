@@ -1,0 +1,58 @@
+name: Sync Develop with Main
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+    types:
+      - closed
+
+jobs:
+  sync-develop:
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout and configure Git
+        run: |
+          # Clone the repository with authentication
+          # Note: GITHUB_TOKEN is automatically provided by GitHub Actions
+          git clone https://${{ github.actor }}:${{ github.token }}@github.com/${{ github.repository }}.git .
+          # Fetch all branches
+          git fetch --all
+          
+      - name: Configure Git
+        run: |
+          git config --global user.name 'ArunNGun'
+          git config --global user.email 'chaudharyarun5797@gmail.com'
+      
+      - name: Check if develop branch exists
+        id: check-develop
+        run: |
+          if git show-ref --verify --quiet refs/remotes/origin/develop; then
+            echo "develop_exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "develop_exists=false" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Create develop branch if it doesn't exist
+        if: steps.check-develop.outputs.develop_exists == 'false'
+        run: |
+          git checkout -b develop
+          git push -u origin develop
+      
+      - name: Rebase develop onto main
+        run: |
+          git checkout develop
+          git pull origin develop
+          git rebase origin/main
+      
+      - name: Push changes to develop
+        run: |
+          # Use token for authentication when pushing
+          # Note: github.token is automatically provided by GitHub Actions
+          git remote set-url origin https://${{ github.actor }}:${{ github.token }}@github.com/${{ github.repository }}.git
+          git push --force-with-lease origin develop
