@@ -1,36 +1,42 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useQuery, gql } from '@apollo/client';
 import styles from './page.module.css';
 
-interface HelloResponse {
-  message: string;
-  timestamp: string;
+const HEALTH_QUERY = gql`
+ query Health {
+  health {
+    status
+    timestamp
+    database {
+      connected
+      message
+    }
+    api {
+      status
+      message
+    }
+  }
+}
+`;
+
+interface HealthResponse {
+  health: {
+    status: string;
+    timestamp: string;
+    api: {
+      status: string;
+      message: string;
+    };
+    database: {
+      connected: boolean;
+      message: string;
+    };
+  };
 }
 
 export default function Home() {
-  const [data, setData] = useState<HelloResponse | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch('http://localhost:3002/api/hello');
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        const result = await response.json();
-        setData(result);
-        setLoading(false);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'An unknown error occurred');
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
+  const { data, loading, error } = useQuery<HealthResponse>(HEALTH_QUERY);
 
   return (
     <main className={styles.main}>
@@ -41,13 +47,16 @@ export default function Home() {
         </p>
 
         <div className={styles.card}>
-          <h2>Backend Connection Test</h2>
-          {loading && <p>Loading data from backend...</p>}
-          {error && <p className={styles.error}>Error: {error}</p>}
+          <h2>GraphQL Health Check</h2>
+          {loading && <p>Loading data from GraphQL API...</p>}
+          {error && <p className={styles.error}>Error: {error.message}</p>}
           {data && (
             <div>
-              <p><strong>Message:</strong> {data.message}</p>
-              <p><strong>Timestamp:</strong> {data.timestamp}</p>
+              <p><strong>API Status:</strong> {data.health.api.status}</p>
+              <p><strong>API Message:</strong> {data.health.api.message}</p>
+              <p><strong>Database Connected:</strong> {data.health.database.connected ? 'Yes' : 'No'}</p>
+              <p><strong>Database Message:</strong> {data.health.database.message}</p>
+              <p><strong>Timestamp:</strong> {data.health.timestamp}</p>
             </div>
           )}
         </div>
